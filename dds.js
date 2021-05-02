@@ -48,6 +48,17 @@ const popularCountries = [
     "bolivia"];
 
 
+const notificationTypes = {
+    NO_NEW_NOTIFICATION: "No new notification",
+    MASKS_OFF: "Masks are optional in open spaces",
+    MASKS_ON: "Wearing masks is mandatory in open or closed spaces",
+    LOCKDOWN_OFF: "Country lock down is over, markets/education/health care services are open",
+    LOCKDOWN_ON: "Country in lock down, markets/education/health care services are closed, stay at home",
+    KEEP_DISTANT: "Keep 2 meters distance between other peoples at all times",
+    MARKETS_CLOSED: "Non essential markets are closed until further notice",
+    MARKETS_OPEN: "Non essential markets are open"
+};
+
 
 async function loadData(filepath, url, formatter) {
     let path = filepath;
@@ -194,6 +205,29 @@ app.get('/disease-data-source/covid19/cases/confirmed', (req, res) => {
     res.status(200).send(response);
 });
 
+
+/**
+ * @description: Get notifications
+ */
+app.get('/disease-data-source/covid19/notifications', (req, res) => {
+
+    const numOfCountries = getRandomInt(0, 5);
+    const countries = JSON.parse(JSON.stringify(popularCountries));
+    const response = [];
+    for (var i = 0 ; i < numOfCountries ; i++) {
+        const country = countries[getRandomInt(0, Object.keys(countries).length) -1];
+        const notificationIdx = getRandomInt(0, Object.keys(notificationTypes).length - 1);
+        const notification = notificationTypes[Object.keys(notificationTypes)[notificationIdx]];
+        delete countries[country];
+        response.push({country, notification, countryCode: countryCodes[country].ISO2})
+    }
+    res.status(200).send(response);
+});
+
+
+/**
+ * @description: Draw risk graph in browser, THIS IS ONLY DEV API, DO NOT USE
+ */
 app.get('/disease-data-source/covid19/drawRisks/:countryName', (req, res) => {
     const countryName = req.params.countryName;
     if(!countryData[countryName])
@@ -203,6 +237,12 @@ app.get('/disease-data-source/covid19/drawRisks/:countryName', (req, res) => {
     const risks = getCountryRiskPerDay(countryName, countryInfo);
     drawCountryRisk(countryInfo, risks);
     res.status(200).send("THIS IS ONLY DEV API, DO NOT USE");
+});
+
+
+process.on ('SIGINT',() => {
+    console.log('DDS server closed!');
+    process.exit(1);
 });
 
 init();

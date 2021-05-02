@@ -6,6 +6,7 @@ function getRandomDate(from) {
     return new Date(from + Math.random() * (to - from));
 }
 
+
 function getRandomInt(min, max) {
     min = Math.ceil(min);
     max = Math.floor(max);
